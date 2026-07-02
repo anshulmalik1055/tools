@@ -252,13 +252,14 @@
         import { getDatabase, ref, set, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
         
         const firebaseConfig = {
-            apiKey: "AIzaSyC8v6xquUuRQpKjV29SL4fS8HFtrybiBS8",
-            authDomain: "tools-82b02.firebaseapp.com",
-            projectId: "tools-82b02",
-            storageBucket: "tools-82b02.firebasestorage.app",
-            messagingSenderId: "405344104567",
-            appId: "1:405344104567:web:cebf0c870103f79c961672"
-        };
+  apiKey: "AIzaSyC8v6xquUuRQpKjV29SL4fS8HFtrybiBS8",
+  authDomain: "tools-82b02.firebaseapp.com",
+  databaseURL: "https://tools-82b02-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "tools-82b02",
+  storageBucket: "tools-82b02.firebasestorage.app",
+  messagingSenderId: "405344104567",
+  appId: "1:405344104567:web:cebf0c870103f79c961672"
+};
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
