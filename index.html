@@ -736,36 +736,37 @@
             </div>
             <div class="admin-tabs">
                 <a onclick="showAdminTab('dashboard')" id="tab-dashboard" class="active">
-                    <i class="fa-solid fa-plus"></i> Dashboard
+                    <i class="fa-solid fa-plus"></i> Add Tool
                 </a>
                 <a onclick="showAdminTab('tools')" id="tab-tools">
-                    <i class="fa-solid fa-book"></i> Manage Tools
+                    <i class="fa-solid fa-list"></i> Manage Tools
                 </a>
                 <a onclick="showAdminTab('orders')" id="tab-orders">
                     <i class="fa-solid fa-receipt"></i> Orders
                 </a>
             </div>
 
+            <!-- Add Tool -->
             <div id="admin-dashboard" class="admin-subview">
                 <div class="box">
-                    <h3><i class="fa-solid fa-upload"></i> Add Tool</h3>
+                    <h3><i class="fa-solid fa-upload"></i> Add New Tool</h3>
                     <form id="add-course-form">
                         <div class="form-group">
                             <label>Tool Title</label>
-                            <input type="text" id="course_name" class="form-control" required />
+                            <input type="text" id="course_name" class="form-control" placeholder="Enter tool name" required />
                         </div>
                         <div class="form-group">
-                            <label>Price (Pts)</label>
-                            <input type="number" id="course_price" class="form-control" required />
+                            <label>Price (Points)</label>
+                            <input type="number" id="course_price" class="form-control" placeholder="Enter price in points" required />
                         </div>
                         <div class="form-group">
                             <label>Short Description</label>
-                            <textarea id="course_desc" class="form-control" required rows="2"></textarea>
+                            <textarea id="course_desc" class="form-control" placeholder="Brief description of the tool" required rows="2"></textarea>
                         </div>
                         <div class="form-group">
                             <label><i class="fa-solid fa-link"></i> Downloadable File Path</label>
                             <input type="text" id="course_file_url" class="form-control"
-                                placeholder="e.g., ./files/tool.zip or https://..." required />
+                                placeholder="e.g., https://example.com/tool.zip or ./files/tool.zip" required />
                         </div>
                         <button type="submit" id="btn-add-course" class="btn-main">
                             <i class="fa-solid fa-rocket"></i> Publish Tool
@@ -774,15 +775,23 @@
                 </div>
             </div>
 
+            <!-- Manage Tools -->
             <div id="admin-tools" class="admin-subview" style="display:none;">
                 <div class="box" style="overflow-x:auto;">
-                    <table id="admin-courses-table"></table>
+                    <h3><i class="fa-solid fa-list"></i> All Tools</h3>
+                    <div style="margin-top:15px;overflow-x:auto;">
+                        <table id="admin-courses-table"></table>
+                    </div>
                 </div>
             </div>
 
+            <!-- Orders -->
             <div id="admin-orders" class="admin-subview" style="display:none;">
                 <div class="box" style="overflow-x:auto;">
-                    <table id="admin-orders-table"></table>
+                    <h3><i class="fa-solid fa-receipt"></i> All Orders</h3>
+                    <div style="margin-top:15px;overflow-x:auto;">
+                        <table id="admin-orders-table"></table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -926,8 +935,12 @@
             if (view === 'cart') renderCart();
             if (view === 'payment') preparePayment();
             if (view === 'library') loadLibrary();
-            if (view === 'admin') { renderAdminCourses();
-                renderAdminOrders(); }
+            if (view === 'admin') { 
+                renderAdminCourses();
+                renderAdminOrders();
+                // Show dashboard by default
+                showAdminTab('dashboard');
+            }
             window.scrollTo(0, 0);
         }
 
@@ -960,7 +973,6 @@
             const mobileNav = document.getElementById('mobile-nav');
 
             if (!user) {
-                // Guest
                 desktopNav.innerHTML = `
                     <a onclick="navigate('home')" class="active-link">Home</a>
                     <a onclick="navigate('cart')">Cart (<span id="d-cart">0</span>)</a>
@@ -977,22 +989,18 @@
             const isAdmin = user.email === ADMIN_EMAIL;
 
             if (isAdmin) {
-                // Admin: Home, Library, Logout
                 desktopNav.innerHTML = `
                     <a onclick="navigate('home')" class="active-link">Home</a>
-                    <a onclick="navigate('library')"><i class="fa-solid fa-book-open"></i> Library</a>
+                    <a onclick="navigate('admin')"><i class="fa-solid fa-shield-halved"></i> Admin</a>
                     <span class="user-email"><i class="fa-solid fa-user-circle"></i> ${user.email}</span>
                     <a onclick="logout()" style="color:var(--secondary);">Logout</a>
                 `;
                 mobileNav.innerHTML = `
                     <a onclick="navigate('home')" id="m-nav-home" class="nav-item active"><i class="fa-solid fa-house"></i> Home</a>
-                    <a onclick="navigate('library')" id="m-nav-library" class="nav-item"><i class="fa-solid fa-book-open"></i> Library</a>
+                    <a onclick="navigate('admin')" id="m-nav-admin" class="nav-item"><i class="fa-solid fa-shield-halved"></i> Admin</a>
                     <a onclick="logout()" class="nav-item"><i class="fa-solid fa-power-off"></i> Logout</a>
                 `;
-                // Show admin tab
-                document.querySelector('.admin-show')?.style.setProperty('display', 'block');
             } else {
-                // User: Home, Cart, Logout
                 desktopNav.innerHTML = `
                     <a onclick="navigate('home')" class="active-link">Home</a>
                     <a onclick="navigate('cart')">Cart (<span id="d-cart">0</span>)</a>
@@ -1222,7 +1230,6 @@
             const isAdmin = window.currentUser.email === ADMIN_EMAIL;
 
             if (isAdmin) {
-                // Admin: Show all orders
                 if (!window.transactionsData || Object.keys(window.transactionsData).length === 0) {
                     container.innerHTML = `<div class="box" style="text-align:center;padding:50px;">
                         <p style="color:var(--text-light);">No orders yet.</p>
@@ -1355,10 +1362,17 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
             btn.disabled = true;
 
-            const name = document.getElementById('course_name').value;
+            const name = document.getElementById('course_name').value.trim();
             const price = parseFloat(document.getElementById('course_price').value);
-            const desc = document.getElementById('course_desc').value;
-            const fileUrl = document.getElementById('course_file_url').value;
+            const desc = document.getElementById('course_desc').value.trim();
+            const fileUrl = document.getElementById('course_file_url').value.trim();
+
+            if (!name || !price || !desc || !fileUrl) {
+                showFlash('Please fill all fields.', 'error');
+                btn.innerHTML = '<i class="fa-solid fa-rocket"></i> Publish Tool';
+                btn.disabled = false;
+                return;
+            }
 
             try {
                 await push(ref(db, 'courses'), {
@@ -1371,8 +1385,9 @@
                 document.getElementById('add-course-form').reset();
                 showFlash('Tool added successfully!');
                 showAdminTab('tools');
+                renderAdminCourses();
             } catch (err) {
-                showFlash(err.message, 'error');
+                showFlash('Error: ' + err.message, 'error');
             } finally {
                 btn.innerHTML = '<i class="fa-solid fa-rocket"></i> Publish Tool';
                 btn.disabled = false;
@@ -1385,6 +1400,7 @@
                     await remove(ref(db, `courses/${id}`));
                     if (window.cart[id]) removeFromCart(id);
                     showFlash('Tool deleted successfully.');
+                    renderAdminCourses();
                 } catch (err) { showFlash('Failed to delete.', 'error'); }
             }
         }
@@ -1395,6 +1411,7 @@
                     await update(ref(db, `transactions/${txnId}`), { order_status: 'Confirmed' });
                     showFlash('Order confirmed successfully.');
                     loadLibrary();
+                    renderAdminOrders();
                 } catch (err) { showFlash('Failed to confirm.', 'error'); }
             }
         }
@@ -1402,10 +1419,10 @@
         function renderAdminCourses() {
             const table = document.getElementById('admin-courses-table');
             if (Object.keys(window.coursesData).length === 0) {
-                table.innerHTML = "<tr><td style='color:var(--text-light);'>No tools available.</td></tr>";
+                table.innerHTML = "<tr><td style='color:var(--text-light);padding:20px;text-align:center;'>No tools available. Click 'Add Tool' to create one.</td></tr>";
                 return;
             }
-            let html = '<tr><th>Icon</th><th>Name</th><th>Action</th></tr>';
+            let html = '<tr><th>Icon</th><th>Name</th><th>Price</th><th>Action</th></tr>';
             for (const [id, course] of Object.entries(window.coursesData)) {
                 const icon = getToolIcon(course.name);
                 const gradient = getRandomGradient();
@@ -1416,9 +1433,8 @@
                                 <i class="fa-solid ${icon}"></i>
                             </div>
                         </td>
-                        <td style="font-weight:600;color:#fff;">${course.name}
-                            <div style="font-weight:normal;font-size:11px;color:var(--secondary);">${course.price} Pts</div>
-                        </td>
+                        <td style="font-weight:600;color:#fff;">${course.name}</td>
+                        <td style="color:var(--secondary);font-weight:600;">${course.price} Pts</td>
                         <td>
                             <button onclick="deleteCourse('${id}')" 
                                     style="color:#EF4444;background:none;border:none;cursor:pointer;font-size:16px;padding:8px;">
@@ -1434,20 +1450,19 @@
         function renderAdminOrders() {
             const table = document.getElementById('admin-orders-table');
             if (!window.transactionsData || Object.keys(window.transactionsData).length === 0) {
-                table.innerHTML = "<tr><td style='color:var(--text-light);'>No orders yet.</td></tr>";
+                table.innerHTML = "<tr><td style='color:var(--text-light);padding:20px;text-align:center;'>No orders yet.</td></tr>";
                 return;
             }
-            let html = '<tr><th>Customer</th><th>Txn ID</th><th>Status</th><th>Action</th></tr>';
+            let html = '<tr><th>Customer</th><th>Transaction ID</th><th>Amount</th><th>Status</th><th>Action</th></tr>';
             const txns = Object.entries(window.transactionsData).sort((a, b) => b[1].timestamp - a[1].timestamp);
             for (const [id, txn] of txns) {
                 const statusColor = txn.order_status === 'Confirmed' ? '#10B981' : '#F59E0B';
                 const statusBg = txn.order_status === 'Confirmed' ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)';
                 html += `
                     <tr>
-                        <td style="color:#fff;">${txn.email}
-                            <div style="font-size:11px;color:var(--text-light);">${txn.total_amount} Pts</div>
-                        </td>
+                        <td style="color:#fff;">${txn.email}</td>
                         <td style="font-family:monospace;color:var(--text-light);font-size:12px;">${txn.transaction_id}</td>
+                        <td style="color:var(--secondary);font-weight:600;">${txn.total_amount} Pts</td>
                         <td>
                             <span style="background:${statusBg};color:${statusColor};padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;">
                                 ${txn.order_status}
